@@ -22,12 +22,22 @@ interface InsertSurfaceMsg {
   paddingKey: string;
   withShadow: boolean;
 }
+
+interface ConfigVariant {
+  key: string;
+  variantProperties?: Record<string, string>;
+}
+interface ConfigComponent { variants: ConfigVariant[]; }
+type ConfigComponents = Record<string, ConfigComponent>;
+interface ConfigLoadedMsg { type: 'config-loaded'; components: ConfigComponents; }
+
 type PluginMessage =
   | GenerateTemplateMsg
   | InsertBlocMsg
   | InsertTableMsg
   | InsertListMsg
-  | InsertSurfaceMsg;
+  | InsertSurfaceMsg
+  | ConfigLoadedMsg;
 
 // ── CONFIG ───────────────────────────────────────────────
 const COMPONENTS = {
@@ -82,6 +92,7 @@ const COMPONENTS = {
   progressBar:     '478998167f29284105ea550c55fcb5e3a9e73131',
   captcha:         '17a7c519337ef9436d6574104a21c8837bd1e76d',
   quote:           'f4fd738f5fc8cc17a37a5d602ba8c096dd34972e',
+  separator:       'c9ec0abac08cec8f17c3c678eff4b07f101341cf',
   upload:          '1977dad7eb112120052eb98e75a3474845b7688f',
   stepper: {
     steps3: '87ba38883d7da035e47c167ece1b0fd1255d123e',
@@ -93,6 +104,113 @@ const COMPONENTS = {
     text:     'ce60e6fad81fb26e2704dcf48477ccd2c2bea3e4',
   },
 };
+
+// ── CONFIG LOADER ────────────────────────────────────────
+// Called when ui.html fetches ge-builder.config.json from GitHub.
+// Resolves each slot against the live variant data; falls back to the
+// hardcoded key when a component or variant is absent from the config.
+function applyConfig(comps: ConfigComponents): void {
+  function find(
+    component: string,
+    match: Record<string, string>,
+    fallback: string
+  ): string {
+    const c = comps[component];
+    if (!c) return fallback;
+    const v = c.variants.find(variant =>
+      Object.entries(match).every(
+        ([k, val]) => (variant.variantProperties || {})[k] === val
+      )
+    );
+    return v ? v.key : fallback;
+  }
+
+  COMPONENTS.header.default       = find('GE_header',           { Device: 'Desktop', Context: 'Default' },                                                                                                           COMPONENTS.header.default);
+  COMPONENTS.header.portal_large  = find('GE_header',           { Device: 'Desktop', Context: 'ge.ch large' },                                                                                                       COMPONENTS.header.portal_large);
+  COMPONENTS.breadcrumb           = find('GE_Breadcrumb',        { Device: 'Desktop', Display: 'False', State: 'Selected - False' },                                                                                 COMPONENTS.breadcrumb);
+  COMPONENTS.typescale.h1_desktop = find('GE_Typescale',         { 'Semantic tag': 'H1', Style: 'Headline Large', 'Recommended for': 'Desktop' },                                                                    COMPONENTS.typescale.h1_desktop);
+  COMPONENTS.typescale.h2_desktop = find('GE_Typescale',         { 'Semantic tag': 'H2', Style: 'Headline Medium', 'Recommended for': 'Desktop' },                                                                   COMPONENTS.typescale.h2_desktop);
+  COMPONENTS.typescale.h3_desktop = find('GE_Typescale',         { 'Semantic tag': 'H3', Style: 'Headline Small', 'Recommended for': 'Desktop' },                                                                    COMPONENTS.typescale.h3_desktop);
+  COMPONENTS.typescale.h4_desktop = find('GE_Typescale',         { 'Semantic tag': 'H4', Style: 'Title Large', 'Recommended for': 'Desktop' },                                                                       COMPONENTS.typescale.h4_desktop);
+  COMPONENTS.typescale.h5_desktop = find('GE_Typescale',         { 'Semantic tag': 'H5', Style: 'Title Medium', 'Recommended for': 'Desktop' },                                                                      COMPONENTS.typescale.h5_desktop);
+  COMPONENTS.list.item            = find('MD_List item',          { Device: 'Desktop', Display: 'Icon + action', Style: 'White' },                                                                                   COMPONENTS.list.item);
+  COMPONENTS.list.selected        = find('MD_List item',          { Device: 'Desktop', Display: 'Icon + action', Style: 'Blue' },                                                                                    COMPONENTS.list.selected);
+  COMPONENTS.filtersPanel         = find('GE_FiltersPanel',       { 'is Open': 'Component state - Opened', 'KOComponent state': 'Default', Device: 'Desktop' },                                                     COMPONENTS.filtersPanel);
+  COMPONENTS.ensembleFiltres      = find('GE_EnsembleDeFiltres',  { Display: 'Cas 1', Device: 'Desktop' },                                                                                                           COMPONENTS.ensembleFiltres);
+  COMPONENTS.checkbox             = find('MD_Checkbox label',     { Selected: 'False', 'User interaction': 'None', 'Component state': 'Enabled', 'Error system': 'False', Size: 'Normal' },                         COMPONENTS.checkbox);
+  COMPONENTS.radio                = find('MD_Radio-button',       { Selected: 'False', 'User interaction': 'None', 'Component state': 'Enabled', 'Error system': 'False' },                                         COMPONENTS.radio);
+  COMPONENTS.textfield            = find('MD_TextField',          { 'User interaction': 'None', 'Component state': 'Enabled empty', 'Error system': 'False', 'is Multiline': 'False' },                             COMPONENTS.textfield);
+  COMPONENTS.searchinput          = find('GE_InputSearch',        { Device: 'Default', 'User interaction': 'None', 'Component state': 'Enabled empty', 'Error system': 'False' },                                   COMPONENTS.searchinput);
+  COMPONENTS.datepicker           = find('MD_Date pickers',       { 'Component state': 'In pending' },                                                                                                               COMPONENTS.datepicker);
+  COMPONENTS.select               = find('MD_Cascadeselect',      { 'User interaction': 'None', 'Component state': 'Enabled empty', 'Error system': 'False', 'has Editable': 'False', 'has Menu opened': 'False', 'has Selection': 'False' }, COMPONENTS.select);
+  COMPONENTS.tableRow             = find('GE_Table Row',          { 'User interaction': 'Out', 'is Header row': 'No', 'is Striped row': 'No', 'is Thick': 'No' },                                                  COMPONENTS.tableRow);
+  COMPONENTS.tableRowStriped      = find('GE_Table Row',          { 'User interaction': 'Out', 'is Header row': 'No', 'is Striped row': 'Yes', 'is Thick': 'No' },                                                 COMPONENTS.tableRowStriped);
+  COMPONENTS.tableRowHeader       = find('GE_Table Row',          { 'User interaction': 'Out', 'is Header row': 'Yes', 'is Striped row': 'No', 'is Thick': 'No' },                                                 COMPONENTS.tableRowHeader);
+  COMPONENTS.dataDisplay          = find('GE_Data display',       {},                                                                                                                                                COMPONENTS.dataDisplay);
+  COMPONENTS.stackedCard          = find('MD_Stacked card',       { Device: 'Default', Orientation: 'Vertical', Context: 'Full customizable' },                                                                      COMPONENTS.stackedCard);
+  COMPONENTS.accordion            = find('GE_Accordion',          {},                                                                                                                                                COMPONENTS.accordion);
+  COMPONENTS.stackedCardInfo      = find('MD_Stacked card_info',  { 'Alert state': 'Info' },                                                                                                                         COMPONENTS.stackedCardInfo);
+  COMPONENTS.navDrawer            = find('MD_Navigation Drawer',  { Context: 'Standard', Device: 'Desktop', State: 'Open', 'Component state': 'Opened', Deprecated: 'false' },                                     COMPONENTS.navDrawer);
+  COMPONENTS.chip                 = find('MD_Chips',              { Size: 'Normal', Version: 'Normal', Style: 'Filled', State: 'Default' },                                                                          COMPONENTS.chip);
+  COMPONENTS.tooltip              = find('MD_Plain Tooltip',      {},                                                                                                                                                COMPONENTS.tooltip);
+  COMPONENTS.richTooltip          = find('MD_Rich Tooltip',       {},                                                                                                                                                COMPONENTS.richTooltip);
+  COMPONENTS.switch               = find('MD_Switch',             { Selected: 'True', 'User interaction': 'None', 'Component state': 'Enabled', 'has Icon active': 'False', 'has Icon inactive': 'False' },         COMPONENTS.switch);
+  COMPONENTS.link                 = find('GE_Link',               { State: 'Standard', Type: 'Bold' },                                                                                                               COMPONENTS.link);
+  COMPONENTS.dropdown             = find('MD_Menu List Item',     { Style: 'Selection with color', 'User interaction': 'Default', 'Component state': 'Enabled', Selected: 'False', 'has Icon right': 'False', 'has Icon left': 'False', 'has Checkbox left': 'False', 'is Multiselect': 'False' }, COMPONENTS.dropdown);
+  COMPONENTS.tabs                 = find('MD_Tabs',               { Device: 'desktop', Display: 'Secondary' },                                                                                                       COMPONENTS.tabs);
+  COMPONENTS.captcha              = find('GE_Captcha',            { Context: 'Phase de production', 'Component state': 'Default' },                                                                                  COMPONENTS.captcha);
+  COMPONENTS.upload               = find('GE_upload_file',        { Context: 'Browse only' },                                                                                                                        COMPONENTS.upload);
+  COMPONENTS.stepper.steps3       = find('GE_Stepper',            { Device: 'Desktop', 'Orientation': 'FullVertical (recommandé)', 'Number of steps': '3' },                                                         COMPONENTS.stepper.steps3);
+  COMPONENTS.button.filled        = find('MD_Filled Button',      { 'User interaction': 'None', 'Component state': 'Enabled', Size: 'Small (Default)', Display: 'Round' },                                          COMPONENTS.button.filled);
+  COMPONENTS.button.text          = find('MD_Text Button',        { 'User interaction': 'None', 'Component state': 'Enabled' },                                                                                      COMPONENTS.button.text);
+}
+
+// Maps slug names (used in ui.html) to live COMPONENTS keys.
+// Built at call time so it always reads the post-applyConfig values.
+function resolveKey(slug: string): string | null {
+  const map: Record<string, string> = {
+    accordion:         COMPONENTS.accordion,
+    dataDisplay:       COMPONENTS.dataDisplay,
+    stackedCard:       COMPONENTS.stackedCard,
+    stackedCardInfo:   COMPONENTS.stackedCardInfo,
+    separator:         COMPONENTS.separator,
+    carousel:          COMPONENTS.carousel,
+    quote:             COMPONENTS.quote,
+    'stepper.steps3':  COMPONENTS.stepper.steps3,
+    'stepper.steps6':  COMPONENTS.stepper.steps6,
+    searchinput:       COMPONENTS.searchinput,
+    filtersPanel:      COMPONENTS.filtersPanel,
+    ensembleFiltres:   COMPONENTS.ensembleFiltres,
+    select:            COMPONENTS.select,
+    checkbox:          COMPONENTS.checkbox,
+    radio:             COMPONENTS.radio,
+    textfield:         COMPONENTS.textfield,
+    datepicker:        COMPONENTS.datepicker,
+    captcha:           COMPONENTS.captcha,
+    upload:            COMPONENTS.upload,
+    breadcrumb:        COMPONENTS.breadcrumb,
+    navDrawer:         COMPONENTS.navDrawer,
+    treeView:          COMPONENTS.treeView,
+    tabs:              COMPONENTS.tabs,
+    h1:                COMPONENTS.typescale.h1_desktop,
+    h2:                COMPONENTS.typescale.h2_desktop,
+    h3:                COMPONENTS.typescale.h3_desktop,
+    h4:                COMPONENTS.typescale.h4_desktop,
+    h5:                COMPONENTS.typescale.h5_desktop,
+    'button.filled':   COMPONENTS.button.filled,
+    'button.outlined': COMPONENTS.button.outlined,
+    'button.text':     COMPONENTS.button.text,
+    dropdown:          COMPONENTS.dropdown,
+    link:              COMPONENTS.link,
+    switch:            COMPONENTS.switch,
+    chip:              COMPONENTS.chip,
+    tooltip:           COMPONENTS.tooltip,
+    richTooltip:       COMPONENTS.richTooltip,
+    snackbar:          COMPONENTS.snackbar,
+    progressBar:       COMPONENTS.progressBar,
+  };
+  return map[slug] || null;
+}
 
 // ── OUVRIR LE PLUGIN ─────────────────────────────────────
 figma.showUI(__html__, { width: 300, height: 600, title: 'GE-Design Builder' });
@@ -116,7 +234,9 @@ function notifySelection(): void {
 // ── ÉCOUTER LES MESSAGES DE L'UI ─────────────────────────
 figma.ui.onmessage = async (msg: PluginMessage) => {
   try {
-    if (msg.type === 'generate-template') {
+    if (msg.type === 'config-loaded') {
+      applyConfig(msg.components);
+    } else if (msg.type === 'generate-template') {
       await handleGenerateTemplate(msg.templateId, msg.context, msg.sidebarPos);
     } else if (msg.type === 'insert-bloc') {
       await handleInsertBloc(msg.key);
@@ -134,7 +254,7 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
   }
 };
 
-// ── CONFIG RESOLVER ──────────────────────────────────────
+// ── TEMPLATE RESOLVERS ───────────────────────────────────
 function getBackofficeShell() {
   return {
     header:     COMPONENTS.header.default,
@@ -562,7 +682,7 @@ async function handleGenerateTemplate(
 /**
  * Insère un bloc dans la frame sélectionnée.
  */
-async function handleInsertBloc(key: string): Promise<void> {
+async function handleInsertBloc(slug: string): Promise<void> {
   const sel = figma.currentPage.selection;
   if (sel.length === 0 || sel[0].type !== 'FRAME') {
     figma.notify('Sélectionnez une frame cible sur le canvas', { error: true });
@@ -570,6 +690,7 @@ async function handleInsertBloc(key: string): Promise<void> {
     return;
   }
   const target = sel[0] as FrameNode;
+  const key = resolveKey(slug) || slug;
   const comp = await figma.importComponentByKeyAsync(key);
   const inst = comp.createInstance();
   target.appendChild(inst);

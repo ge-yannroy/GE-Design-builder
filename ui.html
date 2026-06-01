@@ -398,6 +398,18 @@
   .surface-insert-btn:hover { background: #0D4A8A; }
   .surface-insert-btn .mi { font-size: 14px; }
 
+  /* ── CONFIG STATUS ── */
+  .config-status {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #D0D0D0;
+    flex-shrink: 0;
+    cursor: default;
+    transition: background 0.3s;
+  }
+  .config-status.ok      { background: #3B8A2B; }
+  .config-status.error   { background: #E08A00; }
+
   /* ── FOOTER ── */
   .plugin-footer {
     padding: 8px 14px;
@@ -416,7 +428,10 @@
       <div class="logo-dot"></div>
       ge-builder
     </div>
-    <span class="version">V1</span>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span class="version">V1</span>
+      <div class="config-status" id="config-status" title="Chargement de la config…"></div>
+    </div>
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('templates', this)">
@@ -526,25 +541,25 @@
       <div class="bloc-item" onclick="insertBloc('LIST')">
         <span class="mi">format_list_bulleted</span> Liste
       </div>
-      <div class="bloc-item" onclick="insertBloc('67dbc7afac58a1ae768459e29a2ab95436029f81')">
+      <div class="bloc-item" onclick="insertBloc('accordion')">
         <span class="mi">expand_more</span> Accordéon
       </div>
-      <div class="bloc-item" onclick="insertBloc('2b0774a1853fa72630856025f3c31778ae91a5b6')">
+      <div class="bloc-item" onclick="insertBloc('dataDisplay')">
         <span class="mi">data_object</span> Data display
       </div>
-      <div class="bloc-item" onclick="insertBloc('8afb841550dd0ecaed15e915ff5ca21ddb6c4a2b')">
+      <div class="bloc-item" onclick="insertBloc('stackedCard')">
         <span class="mi">credit_card</span> Card verticale
       </div>
-      <div class="bloc-item" onclick="insertBloc('20bfd7f4ef41b210bd461590d7d0ca25e698b114')">
+      <div class="bloc-item" onclick="insertBloc('stackedCardInfo')">
         <span class="mi">info</span> Card info
       </div>
-      <div class="bloc-item" onclick="insertBloc('c9ec0abac08cec8f17c3c678eff4b07f101341cf')">
+      <div class="bloc-item" onclick="insertBloc('separator')">
         <span class="mi">horizontal_rule</span> Séparateur
       </div>
-      <div class="bloc-item" onclick="insertBloc('bc1792b5697ac837a32f961efe9cb3a3e50e2cd7')">
+      <div class="bloc-item" onclick="insertBloc('carousel')">
         <span class="mi">view_carousel</span> Carousel
       </div>
-      <div class="bloc-item" onclick="insertBloc('f4fd738f5fc8cc17a37a5d602ba8c096dd34972e')">
+      <div class="bloc-item" onclick="insertBloc('quote')">
         <span class="mi">format_quote</span> Citation
       </div>
     </div>
@@ -560,40 +575,40 @@
       <span class="mi cat-chevron">chevron_right</span>
     </div>
     <div class="cat-items" id="cat-formulaire">
-      <div class="bloc-item" onclick="insertBloc('87ba38883d7da035e47c167ece1b0fd1255d123e')">
+      <div class="bloc-item" onclick="insertBloc('stepper.steps3')">
         <span class="mi">steps</span> Stepper 3 étapes
       </div>
-      <div class="bloc-item" onclick="insertBloc('eb76fe831c0d9e3385d614fa77140355d8fcad38')">
+      <div class="bloc-item" onclick="insertBloc('stepper.steps6')">
         <span class="mi">steps</span> Stepper 6 étapes
       </div>
-      <div class="bloc-item" onclick="insertBloc('1d3ba366164bc31c4ec6cc82013cf8addd7c9596')">
+      <div class="bloc-item" onclick="insertBloc('searchinput')">
         <span class="mi">input</span> Champ de saisie
       </div>
-      <div class="bloc-item" onclick="insertBloc('a6c768c54cb0b6ee972599a135ae63f69672ec55')">
+      <div class="bloc-item" onclick="insertBloc('filtersPanel')">
         <span class="mi">filter_list</span> Filtres panel
       </div>
-      <div class="bloc-item" onclick="insertBloc('c65aa7b9de44708b8b047515bb1b7e51e0368ec5')">
+      <div class="bloc-item" onclick="insertBloc('ensembleFiltres')">
         <span class="mi">tune</span> Ensemble de filtres
       </div>
-      <div class="bloc-item" onclick="insertBloc('7cafd10e43df606bef2a85e06ec697cfaefae63b')">
+      <div class="bloc-item" onclick="insertBloc('select')">
         <span class="mi">select</span> Select
       </div>
-      <div class="bloc-item" onclick="insertBloc('92050d9647a76fe69a3d39ece0d329813895cf24')">
+      <div class="bloc-item" onclick="insertBloc('checkbox')">
         <span class="mi">check_box</span> Checkbox
       </div>
-      <div class="bloc-item" onclick="insertBloc('86cf41dd4230255914499e41b8cb1d06111c9eb2')">
+      <div class="bloc-item" onclick="insertBloc('radio')">
         <span class="mi">radio_button_checked</span> Radio
       </div>
-      <div class="bloc-item" onclick="insertBloc('ca5627e219afe3df56ba02464d4c216c140f1fd9')">
+      <div class="bloc-item" onclick="insertBloc('textfield')">
         <span class="mi">text_fields</span> Text field
       </div>
-      <div class="bloc-item" onclick="insertBloc('2193710cd2399a83a9feb2e493409285f4c5fcbc')">
+      <div class="bloc-item" onclick="insertBloc('datepicker')">
         <span class="mi">calendar_today</span> Date picker
       </div>
-      <div class="bloc-item" onclick="insertBloc('17a7c519337ef9436d6574104a21c8837bd1e76d')">
+      <div class="bloc-item" onclick="insertBloc('captcha')">
         <span class="mi">access_time</span> Captcha
       </div>
-      <div class="bloc-item" onclick="insertBloc('1977dad7eb112120052eb98e75a3474845b7688f')">
+      <div class="bloc-item" onclick="insertBloc('upload')">
         <span class="mi">file_upload</span> Upload
       </div>
     </div>
@@ -653,16 +668,16 @@
       <span class="mi cat-chevron">chevron_right</span>
     </div>
     <div class="cat-items" id="cat-navigation">
-      <div class="bloc-item" onclick="insertBloc('de0489e517edab69bfcacb45ab2b01af44f7f4b0')">
+      <div class="bloc-item" onclick="insertBloc('breadcrumb')">
         <span class="mi">more_horiz</span> Breadcrumb
       </div>
-      <div class="bloc-item" onclick="insertBloc('ec5ae009c2e11c2efa318769c079a1edb947110c')">
+      <div class="bloc-item" onclick="insertBloc('navDrawer')">
         <span class="mi">menu_open</span> Navigation drawer
       </div>
-      <div class="bloc-item" onclick="insertBloc('6cd90332d64f1a6fe580c7d8242584c808eb4ba5')">
+      <div class="bloc-item" onclick="insertBloc('treeView')">
         <span class="mi">folder_open</span> Tree view
       </div>
-      <div class="bloc-item" onclick="insertBloc('791c801189ad3509c6f8d78b42ac193d360db350')">
+      <div class="bloc-item" onclick="insertBloc('tabs')">
         <span class="mi">tab</span> Tabs
       </div>
     </div>
@@ -678,19 +693,19 @@
       <span class="mi cat-chevron">chevron_right</span>
     </div>
     <div class="cat-items" id="cat-typo">
-      <div class="bloc-item" onclick="insertBloc('002a25885c9a9a1974284350acd795c9e18cffdc')">
+      <div class="bloc-item" onclick="insertBloc('h1')">
         <span class="mi">format_h1</span> Titre H1
       </div>
-      <div class="bloc-item" onclick="insertBloc('f5018a4739010737531e650fe97f97e2a3466f79')">
+      <div class="bloc-item" onclick="insertBloc('h2')">
         <span class="mi">format_h2</span> Titre H2
       </div>
-      <div class="bloc-item" onclick="insertBloc('5e193c281ad9439c6ce94ec11e3ee938c83ef339')">
+      <div class="bloc-item" onclick="insertBloc('h3')">
         <span class="mi">format_h3</span> Titre H3
       </div>
-      <div class="bloc-item" onclick="insertBloc('fe4bf9530f9b46ed1eeefd8a4aa507e37084f365')">
+      <div class="bloc-item" onclick="insertBloc('h4')">
         <span class="mi">format_h4</span> Titre H4
       </div>
-      <div class="bloc-item" onclick="insertBloc('ba49c86c43da814d4f8e00d301568fbc58d1fb74')">
+      <div class="bloc-item" onclick="insertBloc('h5')">
         <span class="mi">format_h5</span> Titre H5
       </div>
     </div>
@@ -706,37 +721,37 @@
       <span class="mi cat-chevron">chevron_right</span>
     </div>
     <div class="cat-items" id="cat-actions">
-      <div class="bloc-item" onclick="insertBloc('37603c9e48e8a4c4e96dbe69b430d77493fdece9')">
+      <div class="bloc-item" onclick="insertBloc('button.filled')">
         <span class="mi">radio_button_checked</span> Bouton primaire
       </div>
-      <div class="bloc-item" onclick="insertBloc('9a7632ef0121c6ac6de30895106990a067876984')">
+      <div class="bloc-item" onclick="insertBloc('button.outlined')">
         <span class="mi">radio_button_unchecked</span> Bouton secondaire
       </div>
-      <div class="bloc-item" onclick="insertBloc('ce60e6fad81fb26e2704dcf48477ccd2c2bea3e4')">
+      <div class="bloc-item" onclick="insertBloc('button.text')">
         <span class="mi">text_fields</span> Bouton texte
       </div>
-      <div class="bloc-item" onclick="insertBloc('51d9efc87203fde74bdbf99064a6ceab8ae0736c')">
+      <div class="bloc-item" onclick="insertBloc('dropdown')">
         <span class="mi">dropdown</span> Dropdown
       </div>
-      <div class="bloc-item" onclick="insertBloc('3ac115bfa0691755a8e97f162b3bf8a86cbcb406')">
+      <div class="bloc-item" onclick="insertBloc('link')">
         <span class="mi">link</span> Lien
       </div>
-      <div class="bloc-item" onclick="insertBloc('a9f1ecd3f1464b0c4cf1fd632d47ec2d1b2efbd0')">
+      <div class="bloc-item" onclick="insertBloc('switch')">
         <span class="mi">toggle_off</span> Switch (Interrupteur)
       </div>
-      <div class="bloc-item" onclick="insertBloc('9516b0891ca78316713bc44b9c282c7192dcabff')">
+      <div class="bloc-item" onclick="insertBloc('chip')">
         <span class="mi">toggle_on</span> Chip (Etiquette)
       </div>
-      <div class="bloc-item" onclick="insertBloc('1984ea01b291734e0fe5a6c575562d0eb4d37985')">
+      <div class="bloc-item" onclick="insertBloc('tooltip')">
         <span class="mi">tooltip</span> Infobulle
       </div>
-      <div class="bloc-item" onclick="insertBloc('f809f9dd713a543526095e62df51b2361a503757')">
+      <div class="bloc-item" onclick="insertBloc('richTooltip')">
         <span class="mi">textsms</span> Infobulle riche
       </div>
-      <div class="bloc-item" onclick="insertBloc('f93aa49582ba4ab88b5d500d7584671a62a969bb')">
+      <div class="bloc-item" onclick="insertBloc('snackbar')">
         <span class="mi">content_copy</span> Snackbar de confirmation
       </div>
-      <div class="bloc-item" onclick="insertBloc('478998167f29284105ea550c55fcb5e3a9e73131')">
+      <div class="bloc-item" onclick="insertBloc('progressBar')">
         <span class="mi">progress_activity</span> Progress bar
       </div>
     </div>
@@ -874,6 +889,22 @@
       }
     }, '*');
   }
+
+  // Fetch live component keys from GitHub; falls back to hardcoded keys on error.
+  var configDot = document.getElementById('config-status');
+  fetch('https://raw.githubusercontent.com/ge-yannroy/GE-Design-builder-config/main/ge-builder.config.json')
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(cfg) {
+      if (cfg && cfg.components) {
+        parent.postMessage({ pluginMessage: { type: 'config-loaded', components: cfg.components } }, '*');
+        configDot.classList.add('ok');
+        configDot.title = 'Config GitHub · ' + (cfg.version || '');
+      }
+    })
+    .catch(function() {
+      configDot.classList.add('error');
+      configDot.title = 'Config locale (GitHub non disponible)';
+    });
 
   window.onmessage = function(event) {
     var msg = event.data.pluginMessage;
