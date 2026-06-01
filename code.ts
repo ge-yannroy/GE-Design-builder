@@ -162,7 +162,7 @@ function applyConfig(comps: ConfigComponents): void {
   COMPONENTS.upload               = find('GE_upload_file',        { Context: 'Browse only' },                                                                                                                        COMPONENTS.upload);
   COMPONENTS.stepper.steps3       = find('GE_Stepper',            { Device: 'Desktop', 'Orientation': 'FullVertical (recommandé)', 'Number of steps': '3' },                                                         COMPONENTS.stepper.steps3);
   COMPONENTS.button.filled        = find('MD_Filled Button',      { 'User interaction': 'None', 'Component state': 'Enabled', Size: 'Small (Default)', Display: 'Round' },                                          COMPONENTS.button.filled);
-  COMPONENTS.button.text          = find('MD_Text Button',        { 'User interaction': 'None', 'Component state': 'Enabled' },                                                                                      COMPONENTS.button.text);
+  COMPONENTS.button.text          = find('MD_Text Button',        { 'User interaction': 'None', 'Component state': 'Enabled' },                                                                            COMPONENTS.button.text);
 }
 
 // Maps slug names (used in ui.html) to live COMPONENTS keys.
@@ -427,8 +427,12 @@ async function buildList(parent: FrameNode): Promise<void> {
   listFrame.layoutAlign = 'STRETCH';
   listFrame.primaryAxisAlignItems = 'MIN';
   listFrame.fills = [];
+  listFrame.cornerRadius = 4;
+  listFrame.strokes = [{ type: 'SOLID', color: { r: 0.831, g: 0.824, b: 0.812 } }];
+  listFrame.strokeWeight = 1;
+  listFrame.strokeAlign = 'INSIDE';
   parent.appendChild(listFrame);
-  listFrame.clipsContent = false;
+  listFrame.clipsContent = true;
 
   for (let i = 0; i < 5; i++) {
     const itemKey = i === 0 ? COMPONENTS.list.selected : COMPONENTS.list.item;
@@ -436,6 +440,13 @@ async function buildList(parent: FrameNode): Promise<void> {
     const itemInst = itemComp.createInstance();
     listFrame.appendChild(itemInst);
     itemInst.layoutAlign = 'STRETCH';
+
+    if (i < 4) {
+      const divComp = await figma.importComponentByKeyAsync(COMPONENTS.separator);
+      const divInst = divComp.createInstance();
+      listFrame.appendChild(divInst);
+      divInst.layoutAlign = 'STRETCH';
+    }
   }
 }
 
