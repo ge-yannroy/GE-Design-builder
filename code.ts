@@ -105,6 +105,126 @@ const COMPONENTS = {
   },
 };
 
+// ── DESIGN TOKEN VARIABLES ───────────────────────────────
+// All token paths used by this plugin, keyed by a short semantic slug.
+const TOKEN_PATHS: Record<string, string> = {
+  'color.surface':         'md/sys/color/surface/surface',
+  'color.background':      'md/sys/color/background',
+  'color.surface.lowest':  'md/sys/color/surface/container/lowest',
+  'color.surface.low':     'md/sys/color/surface/container/low',
+  'color.surface.high':    'md/sys/color/surface/container/high',
+  'color.surface.highest': 'md/sys/color/surface/container/highest',
+  'color.outline.variant': 'md/sys/color/outline/variant',
+  'spacing.none':          'md/sys/spacings/none',
+  'spacing.xs':            'md/sys/spacings/xs',
+  'spacing.md':            'md/sys/spacings/md',
+  'spacing.xl':            'md/sys/spacings/xl',
+  'spacing.2xl':           'md/sys/spacings/2xl',
+  'spacing.3xl':           'md/sys/spacings/3xl',
+  'corner.xs':             'md/sys/shape/corner/extra-small',
+  'corner.md':             'md/sys/shape/corner/medium',
+};
+
+// Surface UI slot → token slug
+const SURFACE_COLOR_SLOT: Record<string, string> = {
+  background: 'color.surface',
+  lowest:     'color.surface.lowest',
+  low:        'color.surface.low',
+  high:       'color.surface.high',
+  highest:    'color.surface.highest',
+};
+
+// Surface UI padding slot → token slug
+const PADDING_SLOT: Record<string, string> = {
+  none: 'spacing.none',
+  xs:   'spacing.xs',
+  md:   'spacing.md',
+  xl:   'spacing.xl',
+  '2xl': 'spacing.2xl',
+};
+
+// Imported library variables, keyed by their Figma variable path.
+// Populated at startup; all helpers fall back silently when empty.
+const varCache = new Map<string, Variable>();
+
+function tok(slug: string): Variable | null {
+  const path = TOKEN_PATHS[slug];
+  return (path && varCache.get(path)) || null;
+}
+
+function applyFill(node: FrameNode, slug: string, fallback: RGB): void {
+  const v = tok(slug);
+  node.fills = v
+    ? [figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: fallback }, 'color', v)]
+    : [{ type: 'SOLID', color: fallback }];
+}
+
+function applyStroke(node: FrameNode, slug: string, fallback: RGB): void {
+  const v = tok(slug);
+  node.strokes = v
+    ? [figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: fallback }, 'color', v)]
+    : [{ type: 'SOLID', color: fallback }];
+}
+
+function bindVar(node: FrameNode, field: VariableBindableNodeField, slug: string): void {
+  const v = tok(slug);
+  if (v) node.setBoundVariable(field, v);
+}
+
+function applyCornerRadius(node: FrameNode, radius: number, slug: string): void {
+  node.cornerRadius = radius;
+  const v = tok(slug);
+  if (v) {
+    node.setBoundVariable('topLeftRadius',     v);
+    node.setBoundVariable('topRightRadius',    v);
+    node.setBoundVariable('bottomLeftRadius',  v);
+    node.setBoundVariable('bottomRightRadius', v);
+  }
+}
+
+async function loadLibraryVariables(): Promise<void> {
+  try {
+    const collections = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
+
+    // Debug: log all available collection names so we can verify the match
+    console.log('[ge-builder] Available library collections:',
+      collections.map(c => `"${c.name}" (${c.libraryName})`).join(', ')
+    );
+
+    const targetCollectionNames = new Set(['material-color-system', 'material-scale-system']);
+    const targets = collections.filter(c =>
+      targetCollectionNames.has(c.name.toLowerCase().replace(/[\s_]+/g, '-'))
+    );
+
+    console.log('[ge-builder] Matched collections:', targets.length,
+      targets.map(c => c.name).join(', ')
+    );
+
+    if (targets.length === 0) {
+      figma.ui.postMessage({ type: 'vars-loaded', count: 0 });
+      return;
+    }
+
+    const wanted = new Set(Object.values(TOKEN_PATHS));
+
+    for (const col of targets) {
+      const vars = await figma.teamLibrary.getVariablesInLibraryCollectionAsync(col.key);
+      for (const v of vars) {
+        if (wanted.has(v.name)) {
+          const imported = await figma.variables.importVariableByKeyAsync(v.key);
+          varCache.set(v.name, imported);
+        }
+      }
+    }
+
+    console.log('[ge-builder] Variables loaded:', varCache.size, Array.from(varCache.keys()));
+    figma.ui.postMessage({ type: 'vars-loaded', count: varCache.size });
+  } catch (e) {
+    console.error('[ge-builder] loadLibraryVariables failed:', e);
+    figma.ui.postMessage({ type: 'vars-loaded', count: 0 });
+  }
+}
+
 // ── CONFIG LOADER ────────────────────────────────────────
 // Called when ui.html fetches ge-builder.config.json from GitHub.
 // Resolves each slot against the live variant data; falls back to the
@@ -215,6 +335,7 @@ function resolveKey(slug: string): string | null {
 // ── OUVRIR LE PLUGIN ─────────────────────────────────────
 figma.showUI(__html__, { width: 300, height: 600, title: 'GE-Design Builder' });
 
+loadLibraryVariables();
 notifySelection();
 
 figma.on('selectionchange', () => {
@@ -378,7 +499,7 @@ function createBackofficeSidebarFrame(parent: FrameNode): {
   rightCol.layoutAlign = 'STRETCH';
   rightCol.primaryAxisSizingMode = 'FIXED';
   rightCol.counterAxisSizingMode = 'FIXED';
-  rightCol.fills = [{ type: 'SOLID', color: { r: 0.984, g: 0.988, b: 1 } }];
+  applyFill(rightCol, 'color.background', { r: 0.984, g: 0.988, b: 1 });
   row.appendChild(rightCol);
 
   const breadcrumbZone = figma.createFrame();
@@ -386,6 +507,7 @@ function createBackofficeSidebarFrame(parent: FrameNode): {
   breadcrumbZone.layoutMode = 'VERTICAL';
   breadcrumbZone.paddingTop = 0;
   breadcrumbZone.paddingBottom = 32;
+  bindVar(breadcrumbZone, 'paddingBottom', 'spacing.2xl');
   breadcrumbZone.paddingLeft = 0;
   breadcrumbZone.paddingRight = 0;
   breadcrumbZone.primaryAxisSizingMode = 'AUTO';
@@ -398,10 +520,14 @@ function createBackofficeSidebarFrame(parent: FrameNode): {
   content.name = 'contenu';
   content.layoutMode = 'VERTICAL';
   content.itemSpacing = 24;
+  bindVar(content, 'itemSpacing', 'spacing.xl');
   content.paddingTop = 0;
   content.paddingLeft = 32;
+  bindVar(content, 'paddingLeft', 'spacing.2xl');
   content.paddingRight = 32;
+  bindVar(content, 'paddingRight', 'spacing.2xl');
   content.paddingBottom = 32;
+  bindVar(content, 'paddingBottom', 'spacing.2xl');
   content.layoutGrow = 0;
   content.primaryAxisSizingMode = 'AUTO';
   content.counterAxisSizingMode = 'FIXED';
@@ -427,8 +553,8 @@ async function buildList(parent: FrameNode): Promise<void> {
   listFrame.layoutAlign = 'STRETCH';
   listFrame.primaryAxisAlignItems = 'MIN';
   listFrame.fills = [];
-  listFrame.cornerRadius = 4;
-  listFrame.strokes = [{ type: 'SOLID', color: { r: 0.831, g: 0.824, b: 0.812 } }];
+  applyCornerRadius(listFrame, 4, 'corner.xs');
+  applyStroke(listFrame, 'color.outline.variant', { r: 0.831, g: 0.824, b: 0.812 });
   listFrame.strokeWeight = 1;
   listFrame.strokeAlign = 'INSIDE';
   parent.appendChild(listFrame);
@@ -545,9 +671,10 @@ async function insertPortailShell(
   zone.itemSpacing = 0;
   zone.paddingTop = 0;
   zone.paddingBottom = 40;
+  bindVar(zone, 'paddingBottom', 'spacing.3xl');
   zone.paddingLeft = 150;
   zone.paddingRight = 150;
-  zone.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+  applyFill(zone, 'color.surface', { r: 1, g: 1, b: 1 });
   zone.primaryAxisSizingMode = 'AUTO';
   zone.counterAxisSizingMode = 'AUTO';
   zone.layoutAlign = 'STRETCH';
@@ -566,7 +693,9 @@ async function insertPortailShell(
   contentZone.name = 'zone de contenu';
   contentZone.layoutMode = 'HORIZONTAL';
   contentZone.itemSpacing = 24;
+  bindVar(contentZone, 'itemSpacing', 'spacing.xl');
   contentZone.paddingTop = 24;
+  bindVar(contentZone, 'paddingTop', 'spacing.xl');
   contentZone.fills = [];
   contentZone.primaryAxisSizingMode = 'FIXED';
   contentZone.counterAxisSizingMode = 'AUTO';
@@ -578,6 +707,7 @@ async function insertPortailShell(
   leftCol.name = 'colonne gauche';
   leftCol.layoutMode = 'VERTICAL';
   leftCol.itemSpacing = 24;
+  bindVar(leftCol, 'itemSpacing', 'spacing.xl');
   leftCol.fills = [];
   leftCol.layoutGrow = 1;
   leftCol.layoutAlign = 'STRETCH';
@@ -591,6 +721,7 @@ async function insertPortailShell(
   rightCol.name = 'colonne droite';
   rightCol.layoutMode = 'VERTICAL';
   rightCol.itemSpacing = 24;
+  bindVar(rightCol, 'itemSpacing', 'spacing.xl');
   rightCol.fills = [];
   rightCol.resize(360, 100);
   rightCol.primaryAxisSizingMode = 'AUTO';
@@ -730,8 +861,8 @@ async function handleInsertTable(): Promise<void> {
   tableFrame.counterAxisSizingMode = 'FIXED';
   tableFrame.layoutAlign = 'STRETCH';
   tableFrame.fills = [];
-  tableFrame.cornerRadius = 4;
-  tableFrame.strokes = [{ type: 'SOLID', color: { r: 0.831, g: 0.824, b: 0.812 } }];
+  applyCornerRadius(tableFrame, 4, 'corner.xs');
+  applyStroke(tableFrame, 'color.outline.variant', { r: 0.831, g: 0.824, b: 0.812 });
   tableFrame.strokeWeight = 1;
   tableFrame.strokeAlign = 'INSIDE';
   target.appendChild(tableFrame);
@@ -785,34 +916,45 @@ async function handleInsertSurface(
   }
   const target = sel[0] as FrameNode;
 
-  const colors: Record<string, RGB> = {
+  const fallbackColors: Record<string, RGB> = {
     background: { r: 1,     g: 1,     b: 1     },
     lowest:     { r: 0.969, g: 0.980, b: 0.988 },
     low:        { r: 0.902, g: 0.941, b: 0.969 },
     high:       { r: 0.902, g: 0.945, b: 0.980 },
     highest:    { r: 0.835, g: 0.894, b: 0.941 },
   };
-  const paddings: Record<string, number> = {
+  const fallbackPaddings: Record<string, number> = {
     '2xl': 32, 'xl': 24, 'md': 16, 'xs': 8, 'none': 0,
   };
 
-  const color = colors[colorKey];
-  const padding = paddings[paddingKey];
+  const fallbackColor   = fallbackColors[colorKey] || fallbackColors.background;
+  const fallbackPadding = paddingKey in fallbackPaddings ? fallbackPaddings[paddingKey] : 16;
 
   const surface = figma.createFrame();
   surface.name = 'Surface ' + colorKey + ' — ' + paddingKey;
   surface.layoutMode = 'VERTICAL';
   surface.itemSpacing = 16;
-  surface.paddingTop = padding;
-  surface.paddingBottom = padding;
-  surface.paddingLeft = padding;
-  surface.paddingRight = padding;
   surface.primaryAxisSizingMode = 'AUTO';
   surface.counterAxisSizingMode = 'FIXED';
   surface.layoutAlign = 'STRETCH';
-  surface.cornerRadius = 12;
   surface.primaryAxisAlignItems = 'MIN';
-  surface.fills = [{ type: 'SOLID', color }];
+  surface.clipsContent = false;
+
+  applyFill(surface, SURFACE_COLOR_SLOT[colorKey] || 'color.surface', fallbackColor);
+
+  surface.paddingTop    = fallbackPadding;
+  surface.paddingBottom = fallbackPadding;
+  surface.paddingLeft   = fallbackPadding;
+  surface.paddingRight  = fallbackPadding;
+  const paddingSlug = PADDING_SLOT[paddingKey];
+  if (paddingSlug) {
+    bindVar(surface, 'paddingTop',    paddingSlug);
+    bindVar(surface, 'paddingBottom', paddingSlug);
+    bindVar(surface, 'paddingLeft',   paddingSlug);
+    bindVar(surface, 'paddingRight',  paddingSlug);
+  }
+
+  applyCornerRadius(surface, 12, 'corner.md');
 
   if (withShadow) {
     surface.effects = [
@@ -837,7 +979,6 @@ async function handleInsertSurface(
     ];
   }
 
-  surface.clipsContent = false;
   target.appendChild(surface);
   figma.notify('Surface ajoutée ✓');
   figma.ui.postMessage({ type: 'insert-done' });
