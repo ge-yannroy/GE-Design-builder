@@ -47,9 +47,12 @@ const COMPONENTS = {
     portal_large: '5f216cf183fdf50ad19181521700af60bcd12cce',
   },
   footer: {
-    edeMarche: '6bef5a1c2c0ca9fd5e1e3d531e92fd61d3209107',
-    gech_big:  'c67427e268500e1e08c06de2eab28561bd2e9880',
-    default:   'cab5555a980eaa9295a3d2eba0f969615d2c5feb',
+    // edeMarche: '6bef5a1c2c0ca9fd5e1e3d531e92fd61d3209107',
+    edeMarche: '1ca9fefeecc49175ef768333110e6459eccad7f4',
+    // gech_big:  'c67427e268500e1e08c06de2eab28561bd2e9880',
+    gech_big:  'a57fda44505713a7a532999cc38ccfe682c6578e',
+    // default:   'cab5555a980eaa9295a3d2eba0f969615d2c5feb',
+    default:   'b999cdf66e5127fc7ee4dab0d065b08191e9cc56',
   },
   breadcrumb:      'de0489e517edab69bfcacb45ab2b01af44f7f4b0',
   typescale: {
@@ -63,21 +66,26 @@ const COMPONENTS = {
     item:     '848559d92b160753bff0708a3ba3f6437034fe83',
     selected: '629bd6014f272c0ac60a89daf195f3073baff88c',
   },
-  filtersPanel:    'a6c768c54cb0b6ee972599a135ae63f69672ec55',
-  ensembleFiltres: 'c65aa7b9de44708b8b047515bb1b7e51e0368ec5',
+  // filtersPanel:    'a6c768c54cb0b6ee972599a135ae63f69672ec55',
+  filtersPanel:    '78808847bed549acc64e9c6e61902fc25e63b7e3',
+  // ensembleFiltres: 'c65aa7b9de44708b8b047515bb1b7e51e0368ec5',
+  ensembleFiltres: '7560b80bce4da5d7397c3cf0f93247d9dd2d7db7',
   checkbox:        '92050d9647a76fe69a3d39ece0d329813895cf24',
   radio:           '86cf41dd4230255914499e41b8cb1d06111c9eb2',
   textfield:       'ca5627e219afe3df56ba02464d4c216c140f1fd9',
   searchinput:     '1d3ba366164bc31c4ec6cc82013cf8addd7c9596',
-  datepicker:      '2193710cd2399a83a9feb2e493409285f4c5fcbc',
+  // datepicker:      '2193710cd2399a83a9feb2e493409285f4c5fcbc',
+  datepicker:      'dfaeb3ce2f6be1b57197ab529aa4647b08e2f823',
   select:          '7cafd10e43df606bef2a85e06ec697cfaefae63b',
   tableRow:        'c118cb92284e8db3352cace2a3efa5ea591dcec3',
   tableRowStriped: '2b5d9ab597fa4454d753739e72f06aac872abf58',
   tableRowHeader:  'e76ffeb2dde47b83e8b04910fb6f68807c4a5964',
   dataDisplay:     '2b0774a1853fa72630856025f3c31778ae91a5b6',
-  stackedCard:     '8afb841550dd0ecaed15e915ff5ca21ddb6c4a2b',
+  // stackedCard:     '8afb841550dd0ecaed15e915ff5ca21ddb6c4a2b',
+  stackedCard:     '0f477dcf5db92aebfb37d0c42c8f3c4f3b5b7740',
   accordion:       '67dbc7afac58a1ae768459e29a2ab95436029f81',
-  stackedCardInfo: '20bfd7f4ef41b210bd461590d7d0ca25e698b114',
+  // stackedCardInfo: '20bfd7f4ef41b210bd461590d7d0ca25e698b114',
+  stackedCardInfo: 'cc6d8c90d096861d34b63729a03cb75f36cf6f8f',
   navDrawer:       'ec5ae009c2e11c2efa318769c079a1edb947110c',
   treeView:        '6cd90332d64f1a6fe580c7d8242584c808eb4ba5',
   carousel:        'bc1792b5697ac837a32f961efe9cb3a3e50e2cd7',
@@ -93,6 +101,7 @@ const COMPONENTS = {
   captcha:         '17a7c519337ef9436d6574104a21c8837bd1e76d',
   quote:           'f4fd738f5fc8cc17a37a5d602ba8c096dd34972e',
   separator:       'c9ec0abac08cec8f17c3c678eff4b07f101341cf',
+  pagination:      '80500c0a47f3a9dfb44550ac9e114747dd6289dd',
   upload:          '1977dad7eb112120052eb98e75a3474845b7688f',
   stepper: {
     steps3: '87ba38883d7da035e47c167ece1b0fd1255d123e',
@@ -282,7 +291,8 @@ function applyConfig(comps: ConfigComponents): void {
   COMPONENTS.upload               = find('GE_upload_file',        { Context: 'Browse only' },                                                                                                                        COMPONENTS.upload);
   COMPONENTS.stepper.steps3       = find('GE_Stepper',            { Device: 'Desktop', 'Orientation': 'FullVertical (recommandé)', 'Number of steps': '3' },                                                         COMPONENTS.stepper.steps3);
   COMPONENTS.button.filled        = find('MD_Filled Button',      { 'User interaction': 'None', 'Component state': 'Enabled', Size: 'Small (Default)', Display: 'Round' },                                          COMPONENTS.button.filled);
-  COMPONENTS.button.text          = find('MD_Text Button',        { 'User interaction': 'None', 'Component state': 'Enabled' },                                                                            COMPONENTS.button.text);
+  COMPONENTS.button.text          = find('MD_Text Button',        { 'User interaction': 'None', 'Component state': 'Enabled' },
+  COMPONENTS.pagination          = find('GE_Pagination',          {},                                                                            COMPONENTS.button.text);
 }
 
 // Maps slug names (used in ui.html) to live COMPONENTS keys.
@@ -328,6 +338,7 @@ function resolveKey(slug: string): string | null {
     richTooltip:       COMPONENTS.richTooltip,
     snackbar:          COMPONENTS.snackbar,
     progressBar:       COMPONENTS.progressBar,
+    pagination:        COMPONENTS.pagination,
   };
   return map[slug] || null;
 }
